@@ -46,12 +46,6 @@ def get_llm():
 
 # --- CONFIGURATION ---
 DEFAULT_SYSTEM_PROMPT = """You are a RAG agent. You have access to a knowledge base stored in a Chroma database.
-
-You have three primary tools:
-1. rag_search(query: str): Performs a general hybrid search across all documents in the database.
-2. paper_rag_search(query: str, filename: str): Performs a semantic search restricted to a specific document. Use this when the user asks about a specific paper or document.
-3. list_papers(): Lists all available PDF papers in the knowledge base. Use this if the user asks what papers are available or if you need to know the exact filename for paper_rag_search.
-
 Always use the appropriate tool to retrieve relevant information before answering questions."""
 
 tools = get_tools()
@@ -65,6 +59,8 @@ def agent_node(state: AgentState):
     for m in messages:
         if isinstance(m, AIMessage) and not isinstance(m.content, str):
             m.content = sanitize_content(m.content)
+        elif isinstance(m, ToolMessage) and m is not messages[-1]:
+            m.content = "" #sanitize_content(m.content)[:1000]
         sanitized_messages.append(m)
 
     llm = get_llm()

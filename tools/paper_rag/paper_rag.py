@@ -31,10 +31,8 @@ bm25_cache = {}
 def get_bm25_for_file(file_path: str):
     if file_path not in bm25_cache:
         loader = PyPDFLoader(file_path)
-        docs = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-        split_docs = text_splitter.split_documents(docs)
-        retriever = BM25Retriever.from_documents(split_docs)
+        docs = loader.load()  # PyPDFLoader.load() loads each page as a Document
+        retriever = BM25Retriever.from_documents(docs)
         retriever.k = 3
         bm25_cache[file_path] = retriever
     return bm25_cache[file_path]
