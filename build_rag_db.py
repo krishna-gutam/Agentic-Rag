@@ -2,7 +2,6 @@ import os
 import time
 from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
@@ -41,21 +40,22 @@ def build_db():
         print("No new documents to add.")
         return
 
-    # 2. Split documents
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-    docs = text_splitter.split_documents(documents)
-    print(f"Split into {len(docs)} chunks.")
+    # 2. Split documents (by page)
+    # PyPDFLoader already loads documents page-by-page.
+    # We simply use the loaded documents directly.
+    docs = documents
+    print(f"Loaded {len(docs)} pages.")
 
     # 3. Embed and store
     print("Embedding and storing in Chroma...")
     
     # Add documents in batches to avoid rate limits
-    batch_size = 5
+    batch_size = 1
     for i in range(0, len(docs), batch_size):
         batch = docs[i:i+batch_size]
         print(f"Processing batch {i//batch_size + 1}/{(len(docs)-1)//batch_size + 1}...")
         vectorstore.add_documents(batch)
-        time.sleep(2) # Wait to avoid rate limits
+        time.sleep(4) # Wait to avoid rate limits
         
     print("Database updated successfully.")
 
